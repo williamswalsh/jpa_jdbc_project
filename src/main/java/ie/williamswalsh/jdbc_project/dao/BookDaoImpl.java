@@ -13,15 +13,18 @@ public class BookDaoImpl implements BookDao {
 
     public static final String SELECT_BOOK_BY_ID_PREPARED_STATEMENT = "SELECT * from book WHERE id=?";
     public static final String SELECT_BOOK_BY_TITLE_PREPARED_STATEMENT = "SELECT * from book WHERE title=?";
-    public static final String INSERT_BOOK_PREPARED_STATEMENT = "INSERT INTO book (title, isbn, publisher) VALUES (?, ?, ?)";
-    private static final String UPDATE_BOOK_PREPARED_STATEMENT = "UPDATE book SET title=?, isbn=?, publisher=? WHERE id=?";
+    public static final String INSERT_BOOK_PREPARED_STATEMENT = "INSERT INTO book (title, isbn, publisher, author_id) VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_BOOK_PREPARED_STATEMENT = "UPDATE book SET title=?, isbn=?, publisher=?, author_id=? WHERE id=?";
     private static final String DELETE_BOOK_PREPARED_STATEMENT = "DELETE FROM book WHERE id=?";
 
     private final DataSource source;
 
+    private final AuthorDao authorDao;
+
     @Autowired
-    public BookDaoImpl(DataSource source) {
+    public BookDaoImpl(DataSource source, AuthorDao authorDao) {
         this.source = source;
+        this.authorDao = authorDao;
     }
 
     @Override
@@ -53,6 +56,10 @@ public class BookDaoImpl implements BookDao {
         book.setTitle(rs.getString("title"));
         book.setIsbn(rs.getString("isbn"));
         book.setPublisher(rs.getString("publisher"));
+
+//        Complex line using id value to retrieve the author object reference
+        book.setAuthorId(authorDao.getById(rs.getLong("author_id")));
+
         return book;
     }
 
@@ -110,6 +117,14 @@ public class BookDaoImpl implements BookDao {
             ps.setString(1, book.getTitle());
             ps.setString(2, book.getIsbn());
             ps.setString(3, book.getPublisher());
+
+
+            if(book.getAuthorId() != null){
+                ps.setLong(4, book.getAuthorId().getId());
+            } else {
+                ps.setNull(4, -5); // BIGINT -> -5
+            }
+//            Buggy - just doesn't set author id if author is missing??
             ps.execute();
 
             Statement statement = conn.createStatement();
@@ -140,7 +155,11 @@ public class BookDaoImpl implements BookDao {
             ps.setString(1, book.getTitle());
             ps.setString(2, book.getIsbn());
             ps.setString(3, book.getPublisher());
-            ps.setLong(4, book.getId());
+
+            if(book.getAuthorId() != null){
+                ps.setLong(4, book.getAuthorId().getId());
+            }
+            ps.setLong(5, book.getId());
             ps.execute();
 
             Statement statement = conn.createStatement();

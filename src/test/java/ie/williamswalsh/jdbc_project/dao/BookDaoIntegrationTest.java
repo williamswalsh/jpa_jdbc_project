@@ -1,5 +1,6 @@
 package ie.williamswalsh.jdbc_project.dao;
 
+import ie.williamswalsh.jdbc_project.domain.Author;
 import ie.williamswalsh.jdbc_project.domain.Book;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,10 @@ class BookDaoIntegrationTest {
         book.setIsbn("11111");
         book.setPublisher("Walsh");
         book.setTitle("Software Engineering");
+
+        Author author = new Author();
+        author.setId(3L);
+        book.setAuthorId(author);
         Book saved = bookDao.saveBook(book);
 
         assertThat(saved).isNotNull();
@@ -53,11 +58,16 @@ class BookDaoIntegrationTest {
         String incorrectTitle = "T";
         String correctTitle = "Typescript for Beginners";
 
-
         Book book = new Book();
         book.setIsbn(isbn);
         book.setPublisher(publisher);
+
+        Author author = new Author();
+        author.setId(3L);
+
+        book.setAuthorId(author);
         book.setTitle(incorrectTitle);
+
         Book saved = bookDao.saveBook(book);
 
         book.setId(saved.getId());
@@ -75,6 +85,8 @@ class BookDaoIntegrationTest {
         book.setTitle("Should be deleted");
         book.setIsbn("7686976");
         book.setPublisher("Walsh");
+//      Don't need to have fully populated object as we will be deleting it anyway
+//        book.setAuthorId(author);
         Book saved = bookDao.saveBook(book);
 
         bookDao.deleteBookById(saved.getId());

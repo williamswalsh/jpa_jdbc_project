@@ -16,7 +16,9 @@ public class Book {
     private String isbn;
     private String publisher;
 
-    private Long authorId;
+//    Hibernate ignore the
+    @Transient
+    private Author authorId;
 
     public Book() {
     }
@@ -59,11 +61,11 @@ public class Book {
         this.publisher = publisher;
     }
 
-    public Long getAuthorId() {
+    public Author getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(Long authorId) {
+    public void setAuthorId(Author authorId) {
         this.authorId = authorId;
     }
 
